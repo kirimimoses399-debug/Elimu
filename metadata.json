@@ -1,0 +1,6 @@
+{
+  "name": "ElimuHub",
+  "description": "An all-in-one academic, financing, and career gateway for youth, featuring Bursary Tracking, LMS, Mwalimu AI Tutor, and Resume Builder.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
