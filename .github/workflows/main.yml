@@ -1,63 +1,48 @@
-name: Build Android APK
+name: Debug Android Build
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
-  build:
+  debug:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: '21'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v3
 
-      - name: Grant execute permission
-        run: chmod +x ./gradlew
-
-      - name: Show project structure
+      - name: Install SDK
         run: |
-          echo "===== PROJECT FILES ====="
-          ls -la
-          echo "===== APP DIRECTORY ====="
-          ls -la app || true
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-36"
+          sdkmanager "build-tools;36.0.0"
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
 
       - name: Show Gradle version
         run: ./gradlew --version
 
-      - name: Build Debug APK
-        run: |
-          ./gradlew clean assembleDebug --stacktrace --info
-          echo ""
-          echo "===== SEARCHING FOR APK FILES ====="
-          find . -type f -name "*.apk"
-          echo ""
-          echo "===== SEARCHING FOR AAB FILES ====="
-          find . -type f -name "*.aab"
+      - name: List tasks
+        run: ./gradlew tasks
 
-      - name: List build directories
+      - name: Build
+        run: ./gradlew assembleDebug --stacktrace --info
+
+      - name: Find APK
         if: always()
         run: |
-          echo "===== BUILD DIRECTORIES ====="
+          echo "Searching for APK..."
+          find . -name "*.apk"
+
+      - name: Print build folders
+        if: always()
+        run: |
           find . -type d -name build
-
-      - name: Upload APK if found
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-build
-          path: |
-            **/*.apk
-            **/*.aab
-          if-no-files-found: warn
