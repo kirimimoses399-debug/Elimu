@@ -21,14 +21,30 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build debug APK
+      - name: Build debug APK with verbose output
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           echo "GEMINI_API_KEY=$GEMINI_API_KEY" > .env
-          ./gradlew assembleDebug -x lint
+          ./gradlew assembleDebug --stacktrace 2>&1 | tee build.log
 
-      - name: Upload APK
+      - name: Check if APK exists
+        run: |
+          echo "Checking for APK files..."
+          find . -name "*.apk" -type f 2>/dev/null | head -20 || echo "No APK files found"
+          echo ""
+          echo "Full app/build directory contents:"
+          ls -laR app/build/ 2>/dev/null || echo "app/build directory does not exist"
+
+      - name: Upload build log for debugging
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-log
+          path: build.log
+
+      - name: Upload APK if exists
+        if: success()
         uses: actions/upload-artifact@v3
         with:
           name: app-debug-apk
