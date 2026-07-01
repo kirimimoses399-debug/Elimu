@@ -21,7 +21,11 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build debug APK with verbose output
+      - name: Remove debugConfig signing from build.gradle.kts
+        run: |
+          sed -i 's/signingConfig = signingConfigs.getByName("debugConfig")/\/\/ signingConfig = signingConfigs.getByName("debugConfig")/g' app/build.gradle.kts
+
+      - name: Build debug APK
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
@@ -32,9 +36,6 @@ jobs:
         run: |
           echo "Checking for APK files..."
           find . -name "*.apk" -type f 2>/dev/null | head -20 || echo "No APK files found"
-          echo ""
-          echo "Full app/build directory contents:"
-          ls -laR app/build/ 2>/dev/null || echo "app/build directory does not exist"
 
       - name: Upload build log for debugging
         if: always()
