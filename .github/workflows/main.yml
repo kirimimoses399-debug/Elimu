@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -11,26 +14,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
+          cache: gradle
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
+      - name: Verify Gradle
+        run: ./gradlew --version
+
+      - name: Clean project
+        run: ./gradlew clean --stacktrace
+
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --stacktrace --info
+
+      - name: List generated APKs
+        run: find . -name "*.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Elimu-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: elimu-debug-apk
+          path: |
+            **/build/outputs/apk/**/*.apk
