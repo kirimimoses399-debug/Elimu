@@ -21,10 +21,6 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Remove debugConfig signing from build.gradle.kts
-        run: |
-          sed -i 's/signingConfig = signingConfigs.getByName("debugConfig")/\/\/ signingConfig = signingConfigs.getByName("debugConfig")/g' app/build.gradle.kts
-
       - name: Build debug APK
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -37,4 +33,3 @@ jobs:
         with:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: warn
